@@ -120,7 +120,7 @@ app.post("/meetingrooms/:mid/:date", (req, res) => {
 
   const data = req.query;
 
-  let [opening, closing] = data.slot.split(":");
+  let [opening, closing] = data.slots.split(":");
   let uid = data.uid;
 
   closing = closing - 1;
@@ -152,10 +152,18 @@ app.post("/meetingrooms/:mid/:date", (req, res) => {
       for (let i = opening; i <= closing; i++) {
         building.meetingRooms[mid].dates[date].slots[i] = 1;
       }
-      building.meetingRooms[mid].dates[date].users[uid].push([
-        opening,
-        closing + 1,
-      ]);
+      if (uid in building.meetingRooms[mid].dates[date].users) {
+        building.meetingRooms[mid].dates[date].users[uid].push([
+          parseInt(opening),
+          closing + 1,
+        ]);
+      } else {
+        building.meetingRooms[mid].dates[date].users[uid] = [];
+        building.meetingRooms[mid].dates[date].users[uid].push([
+          parseInt(opening),
+          closing + 1,
+        ]);
+      }
     } else {
       const slots = [];
       const slotSize = building.meetingRooms[mid].slotsize;
@@ -172,7 +180,7 @@ app.post("/meetingrooms/:mid/:date", (req, res) => {
         building.meetingRooms[mid].dates[date].slots[i] = 1;
       }
       building.meetingRooms[mid].dates[date].users[uid] = [
-        [opening, closing + 1],
+        [parseInt(opening), closing + 1],
       ];
     }
 
