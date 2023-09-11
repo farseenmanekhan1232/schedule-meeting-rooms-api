@@ -102,7 +102,6 @@ app.get("/meetingrooms/:mid/:date/:slot", (req, res) => {
 
   const slots = building.meetingRooms[mid].dates[date].slots;
   for (let i = opening; i <= closing; i++) {
-    console.log("hit");
     if (slots[i]) {
       isAvailable = false;
       break;
@@ -120,10 +119,8 @@ app.post("/meetingrooms/:mid/:date", (req, res) => {
   const date = req.params.date;
 
   const data = req.query;
-  console.log(data);
-  const uid = data.uid;
 
-  let [opening, closing] = req.params.slot.split(":");
+  let [opening, closing] = data.slot.split(":");
   closing = closing - 1;
   let isAvailable = true;
 
@@ -142,7 +139,6 @@ app.post("/meetingrooms/:mid/:date", (req, res) => {
 
   const slots = building.meetingRooms[mid].dates[date].slots;
   for (let i = opening; i <= closing; i++) {
-    console.log("hit");
     if (slots[i]) {
       isAvailable = false;
       break;
