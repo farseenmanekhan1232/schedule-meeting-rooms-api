@@ -121,6 +121,8 @@ app.post("/meetingrooms/:mid/:date", (req, res) => {
   const data = req.query;
 
   let [opening, closing] = data.slot.split(":");
+  let uid = data.uid;
+
   closing = closing - 1;
   let isAvailable = true;
 
