@@ -123,38 +123,65 @@ app.post("/meetingrooms/:mid/:date", (req, res) => {
   console.log(data);
   const uid = data.uid;
 
-  let [opening, closing] = req.query.slots.split(":");
+  let [opening, closing] = req.params.slot.split(":");
   closing = closing - 1;
+  let isAvailable = true;
 
-  if (date in building.meetingRooms[mid].dates) {
-    for (let i = opening; i <= closing; i++) {
-      building.meetingRooms[mid].dates[date].slots[i] = 1;
-    }
-    building.meetingRooms[mid].dates[date].users[uid].push([
-      opening,
-      closing + 1,
-    ]);
-  } else {
+  if (!(date in building.meetingRooms[mid].dates)) {
     const slots = [];
     const slotSize = building.meetingRooms[mid].slotsize;
 
-    for (let i = 0; i < slotSize; i++) {
+    for (let i = 0; i < slotSize - 1; i++) {
       slots.push(0);
     }
     building.meetingRooms[mid].dates[date] = {
       slots: slots,
       users: {},
     };
-
-    for (let i = opening; i <= closing; i++) {
-      building.meetingRooms[mid].dates[date].slots[i] = 1;
-    }
-    building.meetingRooms[mid].dates[date].users[uid] = [
-      [opening, closing + 1],
-    ];
   }
 
-  res.status(200).send(building.meetingRooms[mid].dates[date]);
+  const slots = building.meetingRooms[mid].dates[date].slots;
+  for (let i = opening; i <= closing; i++) {
+    console.log("hit");
+    if (slots[i]) {
+      isAvailable = false;
+      break;
+    }
+  }
+
+  if (isAvailable) {
+    if (date in building.meetingRooms[mid].dates) {
+      for (let i = opening; i <= closing; i++) {
+        building.meetingRooms[mid].dates[date].slots[i] = 1;
+      }
+      building.meetingRooms[mid].dates[date].users[uid].push([
+        opening,
+        closing + 1,
+      ]);
+    } else {
+      const slots = [];
+      const slotSize = building.meetingRooms[mid].slotsize;
+
+      for (let i = 0; i < slotSize; i++) {
+        slots.push(0);
+      }
+      building.meetingRooms[mid].dates[date] = {
+        slots: slots,
+        users: {},
+      };
+
+      for (let i = opening; i <= closing; i++) {
+        building.meetingRooms[mid].dates[date].slots[i] = 1;
+      }
+      building.meetingRooms[mid].dates[date].users[uid] = [
+        [opening, closing + 1],
+      ];
+    }
+
+    res.status(200).send(building.meetingRooms[mid].dates[date]);
+  } else {
+    res.send({ message: "not available" });
+  }
 });
 
 app.listen(3000, () => {
