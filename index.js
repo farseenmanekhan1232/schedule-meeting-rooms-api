@@ -184,13 +184,12 @@ app.delete("/meetingrooms/:mid/:date/:uid/:meetingid", (req, res) => {
   const meetingid = req.params.meetingid;
 
   const [opening, closing] =
-    building.meetingRooms.mid.dates.date.users.uid.meetings.meetingid;
+    building.meetingRooms[mid].dates[date].users[uid].meetings[meetingid];
 
   for (let i = opening; i <= closing; i++) {
     building.meetingRooms[mid].dates[date].slots[i] = 0;
   }
-  delete building.meetingRooms.mid.dates.date.users.uid.meetings.meetingid;
-
+  delete building.meetingRooms[mid].dates[date].users[uid].meetings[meetingid];
   res.status(200).send(building.meetingRooms.mid.dates.date.users);
 });
 
