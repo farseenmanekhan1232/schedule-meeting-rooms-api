@@ -1,4 +1,5 @@
 const express = require("express");
+const { v4: uuidv4 } = require("uuid");
 
 const app = express();
 
@@ -9,7 +10,7 @@ const building = {
     1: {
       dates: {
         20230911: {
-          slots: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          slots: [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
           users: {},
         },
       },
@@ -19,7 +20,7 @@ const building = {
     2: {
       dates: {
         20230911: {
-          slots: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          slots: [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
           users: {},
         },
       },
@@ -29,7 +30,7 @@ const building = {
     3: {
       dates: {
         20230911: {
-          slots: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          slots: [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
           users: {},
         },
       },
@@ -50,12 +51,12 @@ const building = {
 };
 
 app.get("/meetingrooms", (req, res) => {
-  res.send(building);
+  res.status(200).send(building);
 });
 
 app.get("/meetingrooms/:mid", (req, res) => {
   const mid = req.params.mid;
-  res.send(building.meetingRooms[mid]);
+  res.status(200).send(building.meetingRooms[mid]);
 });
 
 app.get("/meetingrooms/:mid/:date", (req, res) => {
@@ -63,7 +64,7 @@ app.get("/meetingrooms/:mid/:date", (req, res) => {
   const date = req.params.date;
 
   if (date in building.meetingRooms[mid].dates) {
-    res.send(building.meetingRooms[mid].dates[date]);
+    res.status(200).send(building.meetingRooms[mid].dates[date]);
   } else {
     const slots = [];
     const slotSize = building.meetingRooms[mid].slotsize;
@@ -76,7 +77,7 @@ app.get("/meetingrooms/:mid/:date", (req, res) => {
       users: {},
     };
 
-    res.send(building.meetingRooms[mid].dates[date]);
+    res.status(200).send(building.meetingRooms[mid].dates[date]);
   }
 });
 
@@ -109,9 +110,9 @@ app.get("/meetingrooms/:mid/:date/:slot", (req, res) => {
   }
 
   if (isAvailable) {
-    res.send({ message: "available" });
+    res.status(200).send({ message: "available" });
   }
-  res.send({ message: "not available" });
+  res.status(200).send({ message: "not available" });
 });
 
 app.post("/meetingrooms/:mid/:date", (req, res) => {
@@ -148,23 +149,7 @@ app.post("/meetingrooms/:mid/:date", (req, res) => {
   }
 
   if (isAvailable) {
-    if (date in building.meetingRooms[mid].dates) {
-      for (let i = opening; i <= closing; i++) {
-        building.meetingRooms[mid].dates[date].slots[i] = 1;
-      }
-      if (uid in building.meetingRooms[mid].dates[date].users) {
-        building.meetingRooms[mid].dates[date].users[uid].push([
-          parseInt(opening),
-          closing + 1,
-        ]);
-      } else {
-        building.meetingRooms[mid].dates[date].users[uid] = [];
-        building.meetingRooms[mid].dates[date].users[uid].push([
-          parseInt(opening),
-          closing + 1,
-        ]);
-      }
-    } else {
+    if (!(date in building.meetingRooms[mid].dates)) {
       const slots = [];
       const slotSize = building.meetingRooms[mid].slotsize;
 
@@ -175,19 +160,38 @@ app.post("/meetingrooms/:mid/:date", (req, res) => {
         slots: slots,
         users: {},
       };
-
-      for (let i = opening; i <= closing; i++) {
-        building.meetingRooms[mid].dates[date].slots[i] = 1;
-      }
-      building.meetingRooms[mid].dates[date].users[uid] = [
-        [parseInt(opening), closing + 1],
-      ];
     }
+
+    for (let i = opening; i <= closing; i++) {
+      building.meetingRooms[mid].dates[date].slots[i] = 1;
+    }
+
+    building.meetingRooms[mid].dates[date].users[uid].meetings[uuidv4()] = [
+      parseInt(opening),
+      closing + 1,
+    ];
 
     res.status(200).send(building.meetingRooms[mid].dates[date]);
   } else {
-    res.send({ message: "not available" });
+    res.status(200).send({ message: "not available" });
   }
+});
+
+app.delete("/meetingrooms/:mid/:date/:uid/:meetingid", (req, res) => {
+  const mid = req.params.mid;
+  const date = req.params.date;
+  const uid = req.params.uid;
+  const meetingid = req.params.meetingid;
+
+  const [opening, closing] =
+    building.meetingRooms.mid.dates.date.users.uid.meetings.meetingid;
+
+  for (let i = opening; i <= closing; i++) {
+    building.meetingRooms[mid].dates[date].slots[i] = 0;
+  }
+  delete building.meetingRooms.mid.dates.date.users.uid.meetings.meetingid;
+
+  res.status(200).send(building.meetingRooms.mid.dates.date.users);
 });
 
 app.listen(3000, () => {
