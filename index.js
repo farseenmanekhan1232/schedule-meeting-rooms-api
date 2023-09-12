@@ -12,7 +12,7 @@ const building = {
     1: {
       dates: {
         20230611: {
-          slots: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          slots: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
           users: {},
         },
       },
@@ -56,12 +56,50 @@ app.get("/meetingrooms", (req, res) => {
   res.status(200).send(building);
 });
 
-app.get("/meetingrooms/:mid", (req, res) => {
+app.get("/meetingrooms/:date/:slot", (req, res) => {
+  let mids = [];
+
+  let [opening, closing] = req.params.slot.split(":");
+  closing = closing - 1;
+  const date = req.params.date;
+
+  Object.keys(building.meetingRooms).forEach((mid) => {
+    let isAvailable = true;
+    if (!(date in building.meetingRooms[mid].dates)) {
+      const slots = [];
+      const slotSize = building.meetingRooms[mid].slotsize;
+
+      for (let i = 0; i < slotSize - 1; i++) {
+        slots.push(0);
+      }
+      building.meetingRooms[mid].dates[date] = {
+        slots: slots,
+        users: {},
+      };
+    }
+
+    const slots = building.meetingRooms[mid].dates[date].slots;
+    for (let i = parseInt(opening); i <= closing; i++) {
+      if (slots[i] == 1) {
+        isAvailable = false;
+        break;
+      }
+    }
+
+    if (isAvailable) {
+      mids.push(mid);
+    }
+  });
+
+  res.send({ mids: mids });
+});
+
+app.get("/meetingrooms/meetingroom/:mid", (req, res) => {
   const mid = req.params.mid;
   res.status(200).send(building.meetingRooms[mid]);
 });
 
-app.get("/meetingrooms/:mid/:date", (req, res) => {
+app.get("/meetingrooms/meetingroom/:mid/:date", (req, res) => {
   const mid = req.params.mid;
   const date = req.params.date;
 
@@ -83,7 +121,7 @@ app.get("/meetingrooms/:mid/:date", (req, res) => {
   }
 });
 
-app.get("/meetingrooms/:mid/:date/:slot", (req, res) => {
+app.get("/meetingrooms/meetingroom/:mid/:date/:slot", (req, res) => {
   let [opening, closing] = req.params.slot.split(":");
   closing = closing - 1;
   const mid = req.params.mid;
@@ -117,7 +155,7 @@ app.get("/meetingrooms/:mid/:date/:slot", (req, res) => {
   res.status(200).send({ message: "not available" });
 });
 
-app.post("/meetingrooms/:mid/:date", (req, res) => {
+app.post("/meetingrooms/meetingroom/:mid/:date", (req, res) => {
   const mid = req.params.mid;
   const date = req.params.date;
 
@@ -179,21 +217,26 @@ app.post("/meetingrooms/:mid/:date", (req, res) => {
   }
 });
 
-app.delete("/meetingrooms/:mid/:date/:uid/:meetingid", (req, res) => {
-  const mid = req.params.mid;
-  const date = req.params.date;
-  const uid = req.params.uid;
-  const meetingid = req.params.meetingid;
+app.delete(
+  "/meetingrooms/meetingroom/:mid/:date/:uid/:meetingid",
+  (req, res) => {
+    const mid = req.params.mid;
+    const date = req.params.date;
+    const uid = req.params.uid;
+    const meetingid = req.params.meetingid;
 
-  const [opening, closing] =
-    building.meetingRooms[mid].dates[date].users[uid].meetings[meetingid];
+    const [opening, closing] =
+      building.meetingRooms[mid].dates[date].users[uid].meetings[meetingid];
 
-  for (let i = opening; i <= closing; i++) {
-    building.meetingRooms[mid].dates[date].slots[i] = 0;
+    for (let i = opening; i <= closing; i++) {
+      building.meetingRooms[mid].dates[date].slots[i] = 0;
+    }
+    delete building.meetingRooms[mid].dates[date].users[uid].meetings[
+      meetingid
+    ];
+    res.status(200).send(building.meetingRooms.mid.dates.date.users);
   }
-  delete building.meetingRooms[mid].dates[date].users[uid].meetings[meetingid];
-  res.status(200).send(building.meetingRooms.mid.dates.date.users);
-});
+);
 
 app.listen(3000, () => {
   console.log("listening ");
