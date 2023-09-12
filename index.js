@@ -6,7 +6,7 @@ const app = express();
 app.use(express.json());
 
 const building = {
-  openinig: 9,
+  opening: 9,
   closing: 19,
   meetingRooms: {
     1: {
@@ -173,7 +173,7 @@ app.post("/meetingrooms/:mid/:date", (req, res) => {
       closing + 1,
     ];
 
-    res.status(200).send(building.meetingRooms[mid].dates[date]);
+    res.status(200).send(building);
   } else {
     res.status(200).send({ message: "not available" });
   }
