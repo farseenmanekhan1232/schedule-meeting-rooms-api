@@ -3,6 +3,8 @@ const { v4: uuidv4 } = require("uuid");
 
 const app = express();
 
+app.use(express.json());
+
 const building = {
   openinig: 9,
   closing: 19,
@@ -119,13 +121,16 @@ app.post("/meetingrooms/:mid/:date", (req, res) => {
   const mid = req.params.mid;
   const date = req.params.date;
 
-  const data = req.query;
+  const data = req.body;
+  console.log(data);
 
   let [opening, closing] = data.slots.split(":");
   let uid = data.uid;
 
   closing = closing - 1;
   let isAvailable = true;
+
+  console.log(date in building.meetingRooms[mid].dates);
 
   if (!(date in building.meetingRooms[mid].dates)) {
     const slots = [];
@@ -148,19 +153,10 @@ app.post("/meetingrooms/:mid/:date", (req, res) => {
     }
   }
 
+  console.log(uid in building.meetingRooms[mid].dates[date].users);
+
   if (isAvailable) {
     if (!(uid in building.meetingRooms[mid].dates[date].users)) {
-      const slots = [];
-      const slotSize = building.meetingRooms[mid].slotsize;
-
-      for (let i = 0; i < slotSize; i++) {
-        slots.push(0);
-      }
-      building.meetingRooms[mid].dates[date] = {
-        slots: slots,
-        users: {},
-      };
-
       building.meetingRooms[mid].dates[date].users[uid] = {
         meetings: {},
       };
