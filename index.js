@@ -13,7 +13,6 @@ const building = {
       dates: {
         20230611: {
           slots: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          users: {},
         },
       },
       amenities: { ac: true, tv: true, capacity: 12 },
@@ -23,7 +22,6 @@ const building = {
       dates: {
         20230611: {
           slots: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          users: {},
         },
       },
       amenities: { ac: false, tv: true, capacity: 10 },
@@ -33,7 +31,6 @@ const building = {
       dates: {
         20230611: {
           slots: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          users: {},
         },
       },
       amenities: { ac: true, tv: false, capacity: 10 },
@@ -43,13 +40,13 @@ const building = {
       dates: {
         20230611: {
           slots: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          users: {},
         },
       },
       amenities: { ac: true, tv: true, capacity: 7 },
       slotsize: 20,
     },
   },
+  users: {},
 };
 
 app.get("/meetingrooms", (req, res) => {
@@ -164,6 +161,7 @@ app.post("/meetingrooms/meetingroom/:mid/:date", (req, res) => {
 
   let [opening, closing] = data.slots.split(":");
   let uid = data.uid;
+  let title = data.title;
 
   closing = closing - 1;
   let isAvailable = true;
@@ -191,11 +189,10 @@ app.post("/meetingrooms/meetingroom/:mid/:date", (req, res) => {
     }
   }
 
-  console.log(uid in building.meetingRooms[mid].dates[date].users);
-
   if (isAvailable) {
-    if (!(uid in building.meetingRooms[mid].dates[date].users)) {
-      building.meetingRooms[mid].dates[date].users[uid] = {
+    if (!(uid in building.users)) {
+      building.users[uid] = {};
+      building.users[uid][date] = {
         meetings: {},
       };
     }
@@ -206,10 +203,10 @@ app.post("/meetingrooms/meetingroom/:mid/:date", (req, res) => {
 
     const id = uuidv4();
 
-    building.meetingRooms[mid].dates[date].users[uid].meetings[id] = [
-      parseInt(opening),
-      closing + 1,
-    ];
+    building.users[uid][date].meetings[id] = {
+      title: title,
+      slots: [parseInt(opening), closing + 1],
+    };
 
     res.status(200).send(building);
   } else {
