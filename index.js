@@ -9,8 +9,8 @@ const building = {
   meetingRooms: {
     1: {
       dates: {
-        20230911: {
-          slots: [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        20230611: {
+          slots: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
           users: {},
         },
       },
@@ -19,8 +19,8 @@ const building = {
     },
     2: {
       dates: {
-        20230911: {
-          slots: [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        20230611: {
+          slots: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
           users: {},
         },
       },
@@ -29,8 +29,8 @@ const building = {
     },
     3: {
       dates: {
-        20230911: {
-          slots: [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        20230611: {
+          slots: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
           users: {},
         },
       },
@@ -39,7 +39,7 @@ const building = {
     },
     4: {
       dates: {
-        20230911: {
+        20230611: {
           slots: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
           users: {},
         },
@@ -149,7 +149,7 @@ app.post("/meetingrooms/:mid/:date", (req, res) => {
   }
 
   if (isAvailable) {
-    if (!(date in building.meetingRooms[mid].dates)) {
+    if (!(uid in building.meetingRooms[mid].dates[date].users)) {
       const slots = [];
       const slotSize = building.meetingRooms[mid].slotsize;
 
@@ -160,13 +160,19 @@ app.post("/meetingrooms/:mid/:date", (req, res) => {
         slots: slots,
         users: {},
       };
+
+      building.meetingRooms[mid].dates[date].users[uid] = {
+        meetings: {},
+      };
     }
 
     for (let i = opening; i <= closing; i++) {
       building.meetingRooms[mid].dates[date].slots[i] = 1;
     }
 
-    building.meetingRooms[mid].dates[date].users[uid].meetings[uuidv4()] = [
+    const id = uuidv4();
+
+    building.meetingRooms[mid].dates[date].users[uid].meetings[id] = [
       parseInt(opening),
       closing + 1,
     ];
