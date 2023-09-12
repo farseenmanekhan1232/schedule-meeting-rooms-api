@@ -206,6 +206,7 @@ app.post("/meetingrooms/meetingroom/:mid/:date", (req, res) => {
     building.users[uid][date].meetings[id] = {
       title: title,
       slots: [parseInt(opening), closing + 1],
+      mid: mid,
     };
 
     res.status(200).send(building);
