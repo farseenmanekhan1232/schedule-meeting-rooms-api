@@ -53,6 +53,11 @@ app.get("/meetingrooms", (req, res) => {
   res.status(200).send(building);
 });
 
+app.get("/meetingrooms/user/:uid", (req, res) => {
+  const uid = req.params.uid;
+  res.send(building.users[uid]);
+});
+
 app.get("/meetingrooms/:date/:slot", (req, res) => {
   let mids = [];
 
@@ -217,26 +222,23 @@ app.post("/meetingrooms/meetingroom/:mid/:date", (req, res) => {
   }
 });
 
-app.delete(
-  "/meetingrooms/meetingroom/:mid/:date/:uid/:meetingid",
-  (req, res) => {
-    const mid = req.params.mid;
-    const date = req.params.date;
-    const uid = req.params.uid;
-    const meetingid = req.params.meetingid;
+app.delete("/meetingrooms/meetingroom", (req, res) => {
+  const data = req.body;
 
-    const [opening, closing] =
-      building.meetingRooms[mid].dates[date].users[uid].meetings[meetingid];
+  const uid = data.uid;
+  const meetingid = data.meetingid;
+  const date = data.date;
 
-    for (let i = opening; i <= closing; i++) {
-      building.meetingRooms[mid].dates[date].slots[i] = 0;
-    }
-    delete building.meetingRooms[mid].dates[date].users[uid].meetings[
-      meetingid
-    ];
-    res.status(200).send(building.meetingRooms.mid.dates.date.users);
+  const [opening, closing] = users[uid].meetings[meetingid].slots;
+  const mid = users[uid].meetings[meetingid].mid;
+
+  for (let i = opening; i < closing; i++) {
+    building.meetingRooms[mid].dates[date].slots[i] = 0;
   }
-);
+  delete building.users[uid].meetings[meetingid];
+
+  res.status(200).send({ message: "meeting removed" });
+});
 
 app.listen(3000, () => {
   console.log("listening ");
