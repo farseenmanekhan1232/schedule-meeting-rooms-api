@@ -177,7 +177,6 @@ app.post("/meetingrooms/meetingroom/:mid/:date", (req, res) => {
     }
     building.meetingRooms[mid].dates[date] = {
       slots: slots,
-      users: {},
     };
   }
 
@@ -193,7 +192,7 @@ app.post("/meetingrooms/meetingroom/:mid/:date", (req, res) => {
     if (!(uid in building.users)) {
       building.users[uid] = {};
       building.users[uid][date] = {};
-      building.users[uid][date]["meetings"] = {};
+      building.users[uid][date].meetings = {};
     }
 
     for (let i = opening; i <= closing; i++) {
@@ -201,7 +200,11 @@ app.post("/meetingrooms/meetingroom/:mid/:date", (req, res) => {
     }
 
     const id = uuidv4();
-
+    if (!(date in building.users[uid])) {
+      building.users[uid][date] = {
+        meetings: {},
+      };
+    }
     building.users[uid][date].meetings[id] = {
       title: title,
       slots: [parseInt(opening), closing + 1],
