@@ -229,8 +229,8 @@ app.delete("/meetingrooms/meetingroom", (req, res) => {
   const meetingid = data.meetingid;
   const date = data.date;
 
-  const [opening, closing] = users[uid].meetings[meetingid].slots;
-  const mid = users[uid].meetings[meetingid].mid;
+  const [opening, closing] = building.users[uid].meetings[meetingid].slots;
+  const mid = building.users[uid].meetings[meetingid].mid;
 
   for (let i = opening; i < closing; i++) {
     building.meetingRooms[mid].dates[date].slots[i] = 0;
