@@ -224,18 +224,20 @@ app.post("/meetingrooms/meetingroom/:mid/:date", (req, res) => {
 
 app.delete("/meetingrooms/meetingroom", (req, res) => {
   const data = req.body;
-
+  console.log(data);
   const uid = data.uid;
   const meetingid = data.meetingid;
   const date = data.date;
+  console.log(building.users[uid]);
 
-  const [opening, closing] = building.users[uid].meetings[meetingid].slots;
-  const mid = building.users[uid].meetings[meetingid].mid;
+  const [opening, closing] =
+    building.users[uid][date].meetings[meetingid].slots;
+  const mid = building.users[uid][date].meetings[meetingid].mid;
 
   for (let i = opening; i < closing; i++) {
     building.meetingRooms[mid].dates[date].slots[i] = 0;
   }
-  delete building.users[uid].meetings[meetingid];
+  delete building.users[uid][date].meetings[meetingid];
 
   res.status(200).send({ message: "meeting removed" });
 });
