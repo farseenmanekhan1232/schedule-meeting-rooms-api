@@ -192,9 +192,8 @@ app.post("/meetingrooms/meetingroom/:mid/:date", (req, res) => {
   if (isAvailable) {
     if (!(uid in building.users)) {
       building.users[uid] = {};
-      building.users[uid][date] = {
-        meetings: {},
-      };
+      building.users[uid][date] = {};
+      building.users[uid][date]["meetings"] = {};
     }
 
     for (let i = opening; i <= closing; i++) {
